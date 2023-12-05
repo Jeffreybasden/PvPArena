@@ -1,0 +1,10 @@
+{
+    "functions": {
+      "api": "server/src/server.ts"
+    },
+    "public": "client/public",
+    "builds": [
+      { "src": "client/**/*", "use": "@vercel/static" }
+    ]
+  }
+  
