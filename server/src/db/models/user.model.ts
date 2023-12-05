@@ -8,7 +8,7 @@ export const create = async (user: User, password: string) => {
 
     try {
         const res = await db.query(
-            `INSERT INTO "user"(name, email, password) VALUES($1, $2, $3) RETURNING id, name, email, wins, losses, draws`,
+            `INSERT INTO "user"(name, email, password) VALUES($1, $2, $3) RETURNING id, name, email, wins, losses, draws, earnings`,
             [user.name, user.email || null, password]
         );
         return res.rows[0] as User;
@@ -24,7 +24,7 @@ export const findById = async (id: number) => {
     }
     try {
         const res = await db.query(
-            `SELECT id, name, email, wins, losses, draws FROM "user" WHERE id=$1`,
+            `SELECT id, name, email, wins, losses, draws, earnings FROM "user" WHERE id=$1`,
             [id]
         );
         if (res.rowCount) {
@@ -41,7 +41,7 @@ export const findByNameEmail = async (user: User, includePassword = false, limit
     if (!user) {
         try {
             const res = await db.query(
-                `SELECT id, name, email, wins, losses, draws FROM "user" LIMIT $1`,
+                `SELECT id, name, email, wins, losses, draws, earnings FROM "user" LIMIT $1`,
                 [limit ?? 10]
             );
             return res.rows as (User & { password?: string })[];
@@ -71,11 +71,11 @@ export const update = async (id: number, updatedUser: User & { password?: string
     }
 
     try {
-        let query = `UPDATE "user" SET name=$1, email=$2 WHERE id=$3 RETURNING id, name, email, wins, losses, draws`;
+        let query = `UPDATE "user" SET name=$1, email=$2 WHERE id=$3 RETURNING id, name, email, wins, losses, draws, earnings`;
         let values = [updatedUser.name, updatedUser.email, id];
 
         if (updatedUser.password) {
-            query = `UPDATE "user" SET name=$1, email=$2, password=$3 WHERE id=$4 RETURNING id, name, email, wins, losses, draws`;
+            query = `UPDATE "user" SET name=$1, email=$2, password=$3 WHERE id=$4 RETURNING id, name, email, wins, losses, draws, earnings`;
             values = [updatedUser.name, updatedUser.email, updatedUser.password, id];
         }
         const res = await db.query(query, values);

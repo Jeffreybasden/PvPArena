@@ -21,7 +21,7 @@ export function initSocket(
     socket.on("connect", () => {
         socket.emit("joinLobby", lobby.code);
     });
-    // TODO: handle disconnect
+    // TODO: handle disconnect   
 
     socket.on("chat", (message: Message) => {
         actions.addMessage(message);

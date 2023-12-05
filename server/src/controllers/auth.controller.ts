@@ -23,6 +23,7 @@ export const getCurrentSession = async (req: Request, res: Response) => {
 export const guestSession = async (req: Request, res: Response) => {
     try {
         if (req.session.user?.id && typeof req.session.user.id === "number") {
+            console.log('exist')
             res.status(403).end();
             return;
         }
@@ -30,7 +31,8 @@ export const guestSession = async (req: Request, res: Response) => {
 
         const pattern = /^[A-Za-z0-9]+$/;
 
-        if (!pattern.test(name)) {
+        if (!pattern.test(name)) { 
+            console.log('pattern off')
             res.status(400).end();
             return;
         }
@@ -42,6 +44,7 @@ export const guestSession = async (req: Request, res: Response) => {
                 name
             };
             req.session.user = user;
+            console.log("user session created",req.session.user)
         } else if (typeof req.session.user.id === "string" && req.session.user.name !== name) {
             // update guest name
             req.session.user.name = name;
@@ -71,6 +74,7 @@ export const guestSession = async (req: Request, res: Response) => {
         }
         req.session.save(() => {
             res.status(201).json(req.session.user);
+            console.log('session made')
         });
     } catch (err: unknown) {
         console.log(err);

@@ -9,7 +9,7 @@ export interface Game {
     code?: string;
     unlisted?: boolean;
     timeout?: number;
-    observers?: User[];
+    observers?: User[];  
     startedAt?: number;
     endedAt?: number;
 }
@@ -21,6 +21,7 @@ export interface User {
     wins?: number;
     losses?: number;
     draws?: number;
+    earnings?: number;
 
     // mainly for players, not spectators
     connected?: boolean;

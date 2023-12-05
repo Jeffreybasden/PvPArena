@@ -7,7 +7,8 @@ export const createGame = async (side: string, unlisted: boolean) => {
             method: "POST",
             credentials: "include",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Private-Network":"true"
             },
             body: JSON.stringify({ side, unlisted }),
             cache: "no-store"

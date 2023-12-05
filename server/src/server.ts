@@ -11,8 +11,8 @@ import routes from "./routes/index.js";
 import { init as initSocket } from "./socket/index.js";
 
 const corsConfig = {
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
-    credentials: true
+    origin:'https://c3db-73-244-31-14.ngrok-free.app',
+    credentials: true,
 };
 
 const app = express();
@@ -48,10 +48,11 @@ io.use((socket, next) => {
         console.log("io.use: no session");
         socket.disconnect();
     }
-});
+}); 
 initSocket();
 
 const port = process.env.PORT || 3001;
 server.listen(port, () => {
-    console.log(`chessu api server listening on :${port}`);
-});
+    console.log(`degen api server listening on :${port}`);
+});  
+ 

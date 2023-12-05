@@ -5,7 +5,7 @@ import { login, logout, register, setGuestSession } from "@/lib/auth";
 import Link from "next/link";
 import type { FormEvent } from "react";
 import { useContext, useEffect, useRef, useState } from "react";
-
+import { ethers } from "ethers";
 import { IconSettings2, IconUserCircle } from "@tabler/icons-react";
 import Guest from "./Guest";
 import Login from "./Login";
@@ -29,7 +29,7 @@ export default function AuthModal() {
 
   async function submitAuth(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-
+    
     const target = e.target as HTMLFormElement;
     if (activeTab === "guest") {
       const guestName = target.elements.namedItem("guestName") as HTMLInputElement;
@@ -39,6 +39,7 @@ export default function AuthModal() {
       const user = await setGuestSession(guestName.value);
       if (user) {
         session?.setUser(user);
+        
         if (modalToggleRef.current?.checked) {
           modalToggleRef.current.checked = false;
         }
@@ -128,7 +129,7 @@ export default function AuthModal() {
                   href="/settings"
                   onClick={() => ((modalToggleRef.current as HTMLInputElement).checked = false)}
                 >
-                  <IconSettings2 /> Account settings
+                  <IconSettings2 /> Account settings 
                 </Link>
               </div>
 

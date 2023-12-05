@@ -12,6 +12,7 @@
     "dependencies": {
         "@tabler/icons-react": "^2.38.0",
         "chess.js": "1.0.0-beta.6",
+        "ethers": "5.7",
         "next": "^13.5.4",
         "react": "^18.2.0",
         "react-chessboard": "^2.1.3",

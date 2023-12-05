@@ -1,23 +1,17 @@
 "use client";
 
+import { useState } from "react";
+
 export default function Login() {
+  const [buttonLoading, setButtonLoading] = useState(false);
   return (
     <div className="form-control">
       <label htmlFor="loginName" className="label">
-        <span className="label-text">Username or email</span>
+        <span className="label-text">Connect Wallet</span>
       </label>
-      <input
-        type="text"
-        pattern="[A-Za-z0-9]+"
-        title="Alphanumeric characters only"
-        id="loginName"
-        name="loginName"
-        placeholder="username"
-        className="input input-bordered"
-        maxLength={16}
-        minLength={2}
-        required
-      />
+      <button className={"btn" + (buttonLoading ? " loading" : "")} type='button'>
+        Connect     
+      </button>
       <label htmlFor="loginPassword" className="label">
         <span className="label-text">Password</span>
       </label>

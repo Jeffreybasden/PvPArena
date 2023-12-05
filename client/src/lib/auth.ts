@@ -22,12 +22,14 @@ export const setGuestSession = async (name: string) => {
             method: "POST",
             credentials: "include",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+               
             },
             body: JSON.stringify({ name })
         });
         if (res.status === 201) {
             const user: User = await res.json();
+            console.log(" request for guest made and succeeded")
             return user;
         }
     } catch (err) {

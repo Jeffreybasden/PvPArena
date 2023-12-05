@@ -22,7 +22,8 @@ export const getUserProfile = async (req: Request, res: Response) => {
             name: users[0].name,
             wins: users[0].wins,
             losses: users[0].losses,
-            draws: users[0].draws
+            draws: users[0].draws,
+            earnings: users[0].earnings
         };
 
         res.status(200).json({ ...publicUser, recentGames });
