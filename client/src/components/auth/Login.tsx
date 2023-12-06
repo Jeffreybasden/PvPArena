@@ -9,7 +9,7 @@ export default function Login() {
       <label htmlFor="loginName" className="label">
         <span className="label-text">Connect Wallet</span>
       </label>
-      <button className={"btn" + (buttonLoading ? " loading" : "")} type='button'>
+      <button className={"btn"} type='button'>
         Connect     
       </button>
       <label htmlFor="loginPassword" className="label">
