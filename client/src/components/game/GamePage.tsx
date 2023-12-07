@@ -586,7 +586,7 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
                   onClick={copyInvite}
                 >
                   <IconCopy size={16} />
-                  ches.su/{lobby.endReason ? `archive/${lobby.id}` : initialLobby.code}
+                  https://degen-arcade-client.vercel.app/{lobby.endReason ? `archive/${lobby.id}` : initialLobby.code}
                 </label>
                 <div tabIndex={0} className="dropdown-content badge badge-neutral text-xs shadow">
                   copied to clipboard
