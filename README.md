@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Notes from the maintainer:
 > I started this project when I was still new to TS and full-stack development. Bad practices, confusing patterns, and messed up types are everywhere. Suggestions for improvements are very much welcome!
 
@@ -61,3 +62,7 @@ Please read our [Contributing Guidelines](./CONTRIBUTING.md) before starting a p
 ## License
 
 [MIT](./LICENSE)
+=======
+# PvPArena
+PvPArena: Gaming hub on BLAST blockchain for 1v1 battles. Pre-match wagering, public/private games, real-time chat. NFT collection rewards holders, fosters community.
+>>>>>>> 4c24b090b5379722a1ec7aa6a4f9ec27cc7e1b7e
