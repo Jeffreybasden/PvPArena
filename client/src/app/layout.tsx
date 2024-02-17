@@ -9,7 +9,7 @@ import AuthModal from "@/components/auth/AuthModal";
 import ContextProvider from "@/context/ContextProvider";
 
 export const metadata = {
-  title: "PvPArcade",
+  title: "PvPArena",
   description: "Play for Keeps!",
   openGraph: {
     title: "PvPArena",
