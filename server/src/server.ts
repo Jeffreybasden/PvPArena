@@ -11,7 +11,7 @@ import routes from "./routes/index.js";
 import { init as initSocket } from "./socket/index.js";
 
 const corsConfig = {
-    origin:'https://degen-arcade-client-979k1mh2w-degenvsdegens-projects.vercel.app/',
+    origin:'https://degen-arcade-client-979k1mh2w-degenvsdegens-projects.vercel.app',
     credentials: true,
 };
 
@@ -53,6 +53,6 @@ initSocket();
 
 const port = process.env.PORT || 3001;
 server.listen(port, () => {
-    console.log(`degen api server listening on :${port}`);
+    console.log(`degen api server listening on :${port}`, corsConfig);
 });  
  
