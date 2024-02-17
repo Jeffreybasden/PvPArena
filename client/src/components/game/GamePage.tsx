@@ -1,5 +1,6 @@
 "use client";
 // TODO: restructure, i could use some help with this :>
+/* eslint-disable no-unused-vars */
 
 import {
   IconChevronLeft,

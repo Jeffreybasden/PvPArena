@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+
 import { IconBrandGithub } from "@tabler/icons-react";
 
 export default function Footer() {

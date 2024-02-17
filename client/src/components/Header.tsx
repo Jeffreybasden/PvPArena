@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { IconExternalLink, IconUser } from "@tabler/icons-react";
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
