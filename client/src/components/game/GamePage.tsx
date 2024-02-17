@@ -383,10 +383,10 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
   }
 
   async function clickPlay (e: FormEvent<HTMLButtonElement>) {
-    const ethersProvider = new ethers.providers.Web3Provider(walletProvider)
-    const signer =  ethersProvider.getSigner()
-    const PvPToken = new ethers.Contract('0xF6342d018a5FB21a0aa6134A7756118AE2B1953a', PvPTokenAbi, signer)
-    const approved = await PvPToken.approve('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', 20000)
+    // const ethersProvider = new ethers.providers.Web3Provider(walletProvider)
+    // const signer =  ethersProvider.getSigner()
+    // const PvPToken = new ethers.Contract('0xF6342d018a5FB21a0aa6134A7756118AE2B1953a', PvPTokenAbi, signer)
+    // const approved = await PvPToken.approve('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', 20000)
     setPlayBtnLoading(true);
     e.preventDefault();
     

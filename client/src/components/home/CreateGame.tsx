@@ -18,12 +18,12 @@ export default function CreateGame() {
 
     const target = e.target as HTMLFormElement;
     const unlisted = target.elements.namedItem("createUnlisted") as HTMLInputElement;
-    const tokenAmount = target.elements.namedItem("createUnlisted") as HTMLInputElement;
+    const tokenAmount = (target.elements.namedItem("tokenAmount") as HTMLInputElement).value;
     const startingSide = (target.elements.namedItem("createStartingSide") as HTMLSelectElement).value;
-    const token = (target.elements.namedItem("token")as HTMLSelectElement).value
+    const token = (target.elements.namedItem("token") as HTMLSelectElement).value
     console.log('tokenAmount: ',tokenAmount)
     console.log('token :',token)
-    const game = await createGame(startingSide, unlisted.checked, );
+    const game = await createGame(startingSide, unlisted.checked, token, tokenAmount);
 
     if (game) {
       router.push(`/${game.code}`);
@@ -46,9 +46,9 @@ export default function CreateGame() {
       <label className="label">
         <span className="label-text">Choose Token</span>
       </label>
-      <select className="select select-bordered" name="token" id="createStartingSide">
-        <option value="ETH">ETH <span> 10% fee</span></option>
-        <option value="PVP">PvP <span>5% fee</span></option>
+      <select className="select select-bordered" name="token" id="Token">
+        <option value="ETH">ETH  10% fee</option>
+        <option value="PVP">PvP  5% fee</option>
       </select>
     </div>
     <div className="flex flex-col">
@@ -63,7 +63,7 @@ export default function CreateGame() {
     </div>
     <div className="flex flex-col">
       <label className="label">
-        <span className="label-text">Amount of Token</span>
+        <span className="label-text">Wager Amount</span>
       </label>
       <input type="number" className="input input-bordered" name="tokenAmount" id="tokenAmount" step="0.0000001" />
     </div>
