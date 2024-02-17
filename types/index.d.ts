@@ -12,6 +12,8 @@ export interface Game {
     observers?: User[];  
     startedAt?: number;
     endedAt?: number;
+    wager?:string;
+    token?:string
 }
 
 export interface User {

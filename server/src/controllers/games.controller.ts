@@ -83,8 +83,11 @@ export const createGame = async (req: Request, res: Response) => {
             code: nanoid(6),
             unlisted,
             host: user,  
-            pgn: ""
+            pgn: "",
+            wager:req.body.tokenAmount,
+            token:req.body.token
         };
+        
         if (req.body.side === "white") {
             game.white = user;
         } else if (req.body.side === "black") {
