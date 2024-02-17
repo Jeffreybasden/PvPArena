@@ -10,6 +10,7 @@ import { io } from "../server.js";
 export const getCurrentSession = async (req: Request, res: Response) => {
     try {
         if (req.session.user) {
+            console.log('user ',req.session.user)
             res.status(200).json(req.session.user);
         } else {
             res.status(204).end();
@@ -19,7 +20,7 @@ export const getCurrentSession = async (req: Request, res: Response) => {
         res.status(500).end();
     }
 };
-
+ 
 export const guestSession = async (req: Request, res: Response) => {
     try {
         if (req.session.user?.id && typeof req.session.user.id === "number") {

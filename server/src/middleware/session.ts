@@ -31,7 +31,7 @@ const sessionMiddleware = session({
     proxy: true,
     cookie: {
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        secure: true,
+        secure: false,
         httpOnly: true,
         sameSite: "none"
     },

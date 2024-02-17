@@ -28,11 +28,15 @@ import { io } from "socket.io-client";
 import { lobbyReducer, squareReducer } from "./reducers";
 import { initSocket } from "./socketEvents";
 import { syncPgn, syncSide } from "./utils";
-
+import { useWeb3ModalProvider, useWeb3ModalAccount } from '@web3modal/ethers5/react'
+import { ethers } from 'ethers'
 const socket = io(API_URL, { withCredentials: true, autoConnect: false });
 
 export default function GamePage({ initialLobby }: { initialLobby: Game }) {
   const session = useContext(SessionContext);
+
+  const { address, chainId, isConnected } = useWeb3ModalAccount()
+  const { walletProvider } = useWeb3ModalProvider()
 
   const [lobby, updateLobby] = useReducer(lobbyReducer, {
     ...initialLobby,
@@ -53,7 +57,7 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
 
   const [navFen, setNavFen] = useState<string | null>(null);
   const [navIndex, setNavIndex] = useState<number | null>(null);
-
+  const [wagerPaid, setWagerPaid] = useState(false)
   const [playBtnLoading, setPlayBtnLoading] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [chatMessages, setChatMessages] = useState<Message[]>([
@@ -62,9 +66,13 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
       message: `Welcome! You can invite friends to watch or play by sharing the link above. Have fun!`
     }
   ]);
+  
+  const [timeLeft, setTimeLeft] = useState(60 * 60); // 60 minutes in seconds
+  const [isRed, setIsRed] = useState(false);
   const chatListRef = useRef<HTMLUListElement>(null);
   const moveListRef = useRef<HTMLDivElement>(null);
 
+  //abandoned 
   const [abandonSeconds, setAbandonSeconds] = useState(60);
   useEffect(() => {
     if (
@@ -145,13 +153,32 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lobby]);
 
+  //turn Timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prevTime => {
+        if (prevTime <= 15) {
+          setIsRed(true);
+          if (prevTime === 15) {
+            window.alert('You have 15 seconds left! Make a move or you will lose the game.');
+          }
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const seconds = timeLeft % 60;
+
   function updateTurnTitle() {
     if (lobby.side === "s" || !lobby.white?.id || !lobby.black?.id) return;
 
     if (!lobby.endReason && lobby.side === lobby.actualGame.turn()) {
-      document.title = "(your turn) chessu";
+      document.title = "(your turn) chess";
     } else {
-      document.title = "chessu";
+      document.title = "chess";
     }
   }
 
@@ -218,6 +245,7 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
             );
             return squareIndex >= 0 ? `${String.fromCharCode(squareIndex + 97)}${8 - index}` : acc;
           }, "");
+          
           kingSquare = {
             [kingPos]: {
               background: "radial-gradient(red, rgba(255,0,0,.4), transparent 70%)",
@@ -350,12 +378,15 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
     });
   }
 
-  function clickPlay(e: FormEvent<HTMLButtonElement>) {
+  async function clickPlay (e: FormEvent<HTMLButtonElement>) {
+    const ethersProvider = new ethers.providers.Web3Provider(walletProvider)
+    const signer =  ethersProvider.getSigner()
     setPlayBtnLoading(true);
     e.preventDefault();
+    
     socket.emit("joinAsPlayer");
   }
-
+  
   function getPlayerHtml(side: "top" | "bottom") {
     const blackHtml = (
       <div className="flex w-full flex-col justify-center">
@@ -529,13 +560,13 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
           <div className="absolute bottom-0 right-0 top-0 z-10 flex h-full w-full items-center justify-center bg-black bg-opacity-70">
             <div className="bg-base-200 flex w-full items-center justify-center gap-4 px-2 py-4">
               Waiting for opponent.
-              {session?.user?.id !== lobby.white?.id && session?.user?.id !== lobby.black?.id && (
+              {session?.user?.id !== lobby.white?.id && session?.user?.id !== lobby.black?.id && ( isConnected ? 
                 <button
                   className={"btn btn-secondary" + (playBtnLoading ? " btn-disabled" : "")}
                   onClick={clickPlay}
                 >
                   Play as {lobby.white?.id ? "black" : "white"}
-                </button>
+                </button> : <button  className={"btn btn-secondary  btn-disabled"}>wallet not connected</button>
               )}
             </div>
           </div>
@@ -581,12 +612,12 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
                 }
               >
                 <label
-                  tabIndex={0}
+                  tabIndex={3}
                   className="badge badge-md bg-base-300 text-base-content h-8 gap-1 font-mono text-xs sm:h-5 sm:text-sm"
                   onClick={copyInvite}
                 >
                   <IconCopy size={16} />
-                  https://degen-arcade-client.vercel.app/{lobby.endReason ? `archive/${lobby.id}` : initialLobby.code}
+                  PvpArcade/{lobby.endReason ? `archive/${lobby.id}` : initialLobby.code}
                 </label>
                 <div tabIndex={0} className="dropdown-content badge badge-neutral text-xs shadow">
                   copied to clipboard
@@ -638,7 +669,8 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
         </div>
 
         <div className="relative h-60 w-full min-w-fit">
-          {(lobby.endReason ||
+          {
+            (lobby.endReason ||
             (lobby.pgn &&
               lobby.white &&
               session?.user?.id === lobby.white?.id &&
@@ -667,7 +699,7 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    ches.su/archive/{lobby.id}
+                    https://degen-arcade-client.vercel.app/archive/{lobby.id}
                   </a>
                   .
                 </div>
@@ -692,7 +724,8 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
                 </div>
               )}
             </div>
-          )}
+            )
+          }
           <div className="bg-base-300 flex h-full w-full min-w-[64px] flex-col rounded-lg p-4 shadow-sm">
             <ul
               className="mb-4 flex h-full flex-col gap-1 overflow-y-scroll break-words"

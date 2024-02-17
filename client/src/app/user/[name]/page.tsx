@@ -16,13 +16,13 @@ export async function generateMetadata({ params }: { params: { name: string } })
     };
   }
   return {
-    title: `${data.name} | chessu`,
+    title: `${data.name} | PvPArcade`,
     description: `${data.name}'s profile`,
     openGraph: {
-      title: `${data.name} | chessu`,
-      description: `${data.name}'s profile on chessu`,
-      url: `https://ches.su/user/${data.name}`,
-      siteName: "chessu",
+      title: `${data.name} | PvPArcade`,
+      description: `${data.name}'s profile on PvPArcade`,
+      url: `https://PvPArcade/user/${data.name}`,
+      siteName: "PvPArcade",
       locale: "en_US",
       type: "website"
     },

@@ -65,7 +65,6 @@ export const getActiveGame = async (req, res) => {
 export const createGame = async (req, res) => {
     try {
         if (!req.session.user?.id) {
-            console.log(req.session);
             console.log("unauthorized createGame");
             res.status(401).end();
             return;

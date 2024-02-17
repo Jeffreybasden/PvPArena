@@ -36,6 +36,7 @@ export default function AuthModal() {
 
       setButtonLoading(true);
       const user = await setGuestSession(guestName.value);
+      console.log('user received',user)
       if (user) {
         session?.setUser(user);
         

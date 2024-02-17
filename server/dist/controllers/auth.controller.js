@@ -6,6 +6,7 @@ import { io } from "../server.js";
 export const getCurrentSession = async (req, res) => {
     try {
         if (req.session.user) {
+            console.log('user ', req.session.user);
             res.status(200).json(req.session.user);
         }
         else {

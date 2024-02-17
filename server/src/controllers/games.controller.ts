@@ -67,8 +67,8 @@ export const getActiveGame = async (req: Request, res: Response) => {
 
 export const createGame = async (req: Request, res: Response) => {
     try {
+       
         if (!req.session.user?.id) {
-            console.log(req.session)
             console.log("unauthorized createGame");
             res.status(401).end();
             return;
@@ -76,13 +76,13 @@ export const createGame = async (req: Request, res: Response) => {
         const user: User = {
             id: req.session.user.id,
             name: req.session.user.name,
-            connected: false
+            connected: false  
         };
         const unlisted: boolean = req.body.unlisted ?? false;
         const game: Game = {
             code: nanoid(6),
             unlisted,
-            host: user,
+            host: user,  
             pgn: ""
         };
         if (req.body.side === "white") {

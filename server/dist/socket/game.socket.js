@@ -86,7 +86,7 @@ export async function leaveLobby(reason, code) {
     }
     await this.leave(code || Array.from(this.rooms)[1]);
 }
-export async function claimAbandoned(type) {
+export async function claimAbandoned(type, wallet) {
     const game = activeGames.find((g) => g.code === Array.from(this.rooms)[1]);
     if (!game ||
         !game.pgn ||
@@ -116,6 +116,8 @@ export async function claimAbandoned(type) {
     }
     else if (game.black && game.black?.id === this.request.session.user.id) {
         game.winner = "black";
+    }
+    if (type === 'win') {
     }
     const { id } = (await GameModel.save(game));
     game.id = id;

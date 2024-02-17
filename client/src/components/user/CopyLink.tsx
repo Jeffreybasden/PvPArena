@@ -27,7 +27,7 @@ export default function CopyLink({ name }: { name: string }) {
         onClick={copyLink}
       >
         <IconCopy size={16} />
-        ches.su/user/{name}
+        chess/user/{name}
       </label>
       <div tabIndex={0} className="dropdown-content badge badge-neutral text-xs shadow">
         copied to clipboard

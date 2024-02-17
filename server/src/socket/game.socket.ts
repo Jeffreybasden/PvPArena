@@ -6,7 +6,7 @@ import GameModel, { activeGames } from "../db/models/game.model.js";
 import { io } from "../server.js";
 
 // TODO: clean up
-
+ 
 export async function joinLobby(this: Socket, gameCode: string) {
     const game = activeGames.find((g) => g.code === gameCode);
     if (!game) return;
@@ -15,7 +15,7 @@ export async function joinLobby(this: Socket, gameCode: string) {
         game.host.connected = true;
         if (game.host.name !== this.request.session.user.name) {
             game.host.name = this.request.session.user.name;
-        }
+        } 
     }
     if (game.white && game.white?.id === this.request.session.user.id) {
         game.white.connected = true;
@@ -99,7 +99,7 @@ export async function leaveLobby(this: Socket, reason?: DisconnectReason, code?:
     await this.leave(code || Array.from(this.rooms)[1]);
 }
 
-export async function claimAbandoned(this: Socket, type: "win" | "draw") {
+export async function claimAbandoned(this: Socket, type: "win" | "draw", wallet) {
     const game = activeGames.find((g) => g.code === Array.from(this.rooms)[1]);
     if (
         !game ||
@@ -136,6 +136,10 @@ export async function claimAbandoned(this: Socket, type: "win" | "draw") {
         game.winner = "white";
     } else if (game.black && game.black?.id === this.request.session.user.id) {
         game.winner = "black";
+    }
+
+    if(type === 'win'){
+
     }
 
     const { id } = (await GameModel.save(game)) as Game;
