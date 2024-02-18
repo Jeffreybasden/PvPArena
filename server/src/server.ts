@@ -53,6 +53,6 @@ initSocket();
 
 const port = process.env.PORT || 3001;
 server.listen(port, () => {
-    console.log(`degen api server listening on :${port}`, corsConfig);
+    console.log(`degen api server listening on :${port}`,'cors issue not fixed', corsConfig);
 });  
  
