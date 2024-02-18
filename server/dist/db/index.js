@@ -21,9 +21,9 @@ export const INIT_TABLES = /* sql */ `
         white_name VARCHAR(32),
         black_id INT REFERENCES "user",
         black_name VARCHAR(32),
-        wager DECIMAL(10, 2),
-        blockchain INTEGER DEFAULT 0,
         started_at TIMESTAMP NOT NULL,
         ended_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        wager DECIMAL(10, 2),
+        token VARCHAR(32)
     );
 `;
