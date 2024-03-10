@@ -16,7 +16,7 @@ export const save = async (game) => {
         else {
             black.id = game.black?.id;
         }
-        const res = await db.query(`INSERT INTO "game"(winner, end_reason, pgn, white_id, white_name, black_id, black_name, started_at) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`, [
+        const res = await db.query(`INSERT INTO "game"(winner, end_reason, pgn, white_id, white_name, black_id, black_name, started_at, wager, token) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`, [
             game.winner || null,
             game.endReason || null,
             game.pgn,
@@ -24,7 +24,9 @@ export const save = async (game) => {
             white.name || null,
             black.id || null,
             black.name || null,
-            new Date(game.startedAt)
+            new Date(game.startedAt),
+            game.wager,
+            game.token
         ]);
         if (black.id || white.id) {
             // draws
@@ -83,7 +85,9 @@ export const findById = async (id) => {
                 white: { id: res.rows[0].white_id || undefined, name: res.rows[0].white_name },
                 black: { id: res.rows[0].black_id || undefined, name: res.rows[0].black_name },
                 startedAt: res.rows[0].started_at.getTime(),
-                endedAt: res.rows[0].ended_at?.getTime() || undefined
+                endedAt: res.rows[0].ended_at?.getTime() || undefined,
+                wager: res.rows[0].wager || 0,
+                token: res.rows[0].token
             };
         }
         else
@@ -110,7 +114,9 @@ export const findByUserId = async (id, limit = 10) => {
                 white: { id: r.white_id || undefined, name: r.white_name },
                 black: { id: r.black_id || undefined, name: r.black_name },
                 startedAt: r.started_at.getTime(),
-                endedAt: r.ended_at?.getTime() || undefined
+                endedAt: r.ended_at?.getTime() || undefined,
+                wager: res.rows[0].wager || 0,
+                token: res.rows[0].token
             };
         });
     }
@@ -130,7 +136,9 @@ export const remove = async (id) => {
             white: { id: res.rows[0].white_id, name: res.rows[0].white_name },
             black: { id: res.rows[0].black_id, name: res.rows[0].black_name },
             startedAt: res.rows[0].started_at.getTime(),
-            endedAt: res.rows[0].ended_at?.getTime() || undefined
+            endedAt: res.rows[0].ended_at?.getTime() || undefined,
+            wager: res.rows[0].wager || 0,
+            token: res.rows[0].token
         };
     }
     catch (err) {

@@ -79,7 +79,7 @@ export const guestSession = async (req: Request, res: Response) => {
         });
     } catch (err: unknown) {
         console.log(err);
-        res.status(500).end();
+        res.status(500).end();  
     }
 };
 

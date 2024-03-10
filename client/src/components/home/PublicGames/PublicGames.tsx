@@ -34,7 +34,7 @@ export default async function PublicGames() {
                         : game.white?.id) === "number"
                         ? "text-primary"
                         : ""
-                    }
+                    } 
                   >
                     {(game.host?.id === game.white?.id ? game.black?.name : game.white?.name) || ""}
                   </td>

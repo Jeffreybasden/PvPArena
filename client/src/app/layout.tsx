@@ -41,27 +41,23 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" className="overflow-x-hidden">
       <body className="overflow-x-hidden">
           <Web3ModalProvider>
-        <ContextProvider>
-          <Header />
+          <ContextProvider>
+          <Header/>
 
           <main className="mx-1 flex min-h-[70vh] justify-center md:mx-16 lg:mx-40">
             {children}
-          </main>
-
-          <AuthModal />
-        </ContextProvider>
+          </main> 
+          <AuthModal/>
+        </ContextProvider> 
         </Web3ModalProvider>
-
-        <Footer />
-
-        {/* next/script issue: https://github.com/vercel/next.js/issues/43402 */}
+        <Footer /> 
         <script
           id="load-theme"
           dangerouslySetInnerHTML={{
             __html: `if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
               document.documentElement.setAttribute("data-theme", "chessuDark");
           } else {
-              document.documentElement.setAttribute("data-theme", "chessuLight");
+              document.documentElement.setAttribute("data-theme", "chessuLight"); 
           }`
           }}
         ></script>

@@ -20,7 +20,7 @@ declare module "http" {
         session: Session & {
             user: User;
         };
-    }
+    } 
 }
 const sessionMiddleware = session({
     store: new PGSession({ pool: db, createTableIfMissing: true }),
@@ -35,7 +35,7 @@ const sessionMiddleware = session({
         httpOnly: true,
         sameSite: "none"
     },
-    genid: function () {
+    genid: function () { 
         return nanoid(21);
     }
 });

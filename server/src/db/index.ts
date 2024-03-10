@@ -24,7 +24,7 @@ export const INIT_TABLES = /* sql */ `
         black_id INT REFERENCES "user",
         black_name VARCHAR(32),
         started_at TIMESTAMP NOT NULL,
-        ended_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ended_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         wager DECIMAL(10, 2),
         token VARCHAR(32)
     );

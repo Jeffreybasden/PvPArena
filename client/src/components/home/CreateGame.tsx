@@ -11,6 +11,8 @@ export default function CreateGame() {
   const session = useContext(SessionContext);
   const [buttonLoading, setButtonLoading] = useState(false);
   const router = useRouter();
+
+  
   async function submitCreateGame(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!session?.user?.id) return;

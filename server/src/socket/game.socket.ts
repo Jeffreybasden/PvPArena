@@ -99,7 +99,7 @@ export async function leaveLobby(this: Socket, reason?: DisconnectReason, code?:
     await this.leave(code || Array.from(this.rooms)[1]);
 }
 
-export async function claimAbandoned(this: Socket, type: "win" | "draw", wallet) {
+export async function claimAbandoned(this: Socket, type: "win" | "draw", ) {
     const game = activeGames.find((g) => g.code === Array.from(this.rooms)[1]);
     if (
         !game ||
@@ -132,15 +132,14 @@ export async function claimAbandoned(this: Socket, type: "win" | "draw", wallet)
 
     if (type === "draw") {
         game.winner = "draw";
+        
     } else if (game.white && game.white?.id === this.request.session.user.id) {
         game.winner = "white";
     } else if (game.black && game.black?.id === this.request.session.user.id) {
         game.winner = "black";
     }
 
-    if(type === 'win'){
-
-    }
+  
 
     const { id } = (await GameModel.save(game)) as Game;
     game.id = id;
@@ -169,7 +168,7 @@ export async function sendMove(this: Socket, m: { from: string; to: string; prom
     if (!game || game.endReason || game.winner) return;
     const chess = new Chess();
     if (game.pgn) {
-        chess.loadPgn(game.pgn);
+        chess.loadPgn(game.pgn); 
     }
 
     try {
@@ -181,10 +180,10 @@ export async function sendMove(this: Socket, m: { from: string; to: string; prom
         ) {
             throw new Error("not turn to move");
         }
-
+ 
         const newMove = chess.move(m);
 
-        if (newMove) {
+        if (newMove){  
             game.pgn = chess.pgn();
             this.to(game.code as string).emit("receivedMove", m);
             if (chess.isGameOver()) {
@@ -224,7 +223,7 @@ export async function sendMove(this: Socket, m: { from: string; to: string; prom
         console.log("sendMove error: " + e);
         this.emit("receivedLatestGame", game);
     }
-}
+} 
 
 // eslint-disable-next-line no-unused-vars
 export async function joinAsPlayer(this: Socket) {
@@ -268,5 +267,23 @@ export async function chat(this: Socket, message: string) {
         author: this.request.session.user,
         message
     });
+}
+
+export async function wagerPaid(this:Socket, wallet){
+    // get active games 
+    const game = activeGames.find((g) => g.code === Array.from(this.rooms)[1]);
+    if(!game) return;
+    
+    // check if the requester is black or white
+    if(this.request.session.user.id === game.black?.id){
+        game.black.wagerPaid = true;
+        game.black.wallet = wallet
+    }else{
+        game.white.wagerPaid = true;
+        game.white.wallet = wallet
+    }
+
+    io.to(game.code).emit('receivedLatestGame', game)
+
 }
 

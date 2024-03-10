@@ -14,6 +14,7 @@ export interface Game {
     endedAt?: number;
     wager?:string;
     token?:string
+    
 }
 
 export interface User {
@@ -24,7 +25,8 @@ export interface User {
     losses?: number;
     draws?: number;
     earnings?: number;
-
+    wagerPaid?: boolean
+    wallet?:string
     // mainly for players, not spectators
     connected?: boolean;
     disconnectedOn?: number;

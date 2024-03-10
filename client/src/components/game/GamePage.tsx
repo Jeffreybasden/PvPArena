@@ -54,14 +54,14 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
     rightClicked: {},
     check: {}
   });
-
+  const [timeLeft, setTimeLeft] = useState(60);
   const [moveFrom, setMoveFrom] = useState<string | Square | null>(null);
   const [boardWidth, setBoardWidth] = useState(480);
   const chessboardRef = useRef<ClearPremoves>(null);
 
   const [navFen, setNavFen] = useState<string | null>(null);
   const [navIndex, setNavIndex] = useState<number | null>(null);
-  const [wagerPaid, setWagerPaid] = useState(false)
+  
   const [playBtnLoading, setPlayBtnLoading] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [chatMessages, setChatMessages] = useState<Message[]>([
@@ -71,10 +71,11 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
     }
   ]);
   
-  const [timeLeft, setTimeLeft] = useState(60 * 60); // 60 minutes in seconds
+  // 60 minutes in seconds
   const [isRed, setIsRed] = useState(false);
   const chatListRef = useRef<HTMLUListElement>(null);
   const moveListRef = useRef<HTMLDivElement>(null);
+  const wagerPaid = useRef(false)
 
   //abandoned 
   const [abandonSeconds, setAbandonSeconds] = useState(60);
@@ -112,14 +113,14 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
     socket.connect();
 
     window.addEventListener("resize", handleResize);
-    handleResize();
-
+    handleResize(); 
+ 
     if (lobby.pgn && lobby.actualGame.pgn() !== lobby.pgn) {
       syncPgn(lobby.pgn, lobby, { updateCustomSquares, setNavFen, setNavIndex });
     }
 
     syncSide(session.user, undefined, lobby, { updateLobby });
-
+ 
     initSocket(session.user, socket, lobby, {
       updateLobby,
       addMessage,
@@ -159,22 +160,28 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
 
   //turn Timer
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prevTime => {
-        if (prevTime <= 15) {
-          setIsRed(true);
-          if (prevTime === 15) {
-            window.alert('You have 15 seconds left! Make a move or you will lose the game.');
-          }
+    if(!lobby.endReason && lobby.black?.connected && lobby.white?.connected  && wagerPaid.current && lobby.side === lobby.actualGame.turn()){
+
+      const timer = setInterval(() => {
+        setTimeLeft(prevTime => {
+          if ( prevTime <= 15 ) {
+            setIsRed(true);
+        }
+
+        if(prevTime <= 0){
+          clearInterval(timer); // Stop the timer when prevTime reaches 0
+          claimAbandoned('draw');
+          return 0; // Ensure
         }
         return prevTime - 1;
       });
     }, 1000);
-
+    
     return () => clearInterval(timer);
-  }, []);
+  }
+  }, [lobby.actualGame.turn()]);
 
-  const seconds = timeLeft % 60;
+  
 
   function updateTurnTitle() {
     if (lobby.side === "s" || !lobby.white?.id || !lobby.black?.id) return;
@@ -382,11 +389,18 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
     });
   }
 
+  async function payWager(){
+    const ethersProvider = new ethers.providers.Web3Provider(walletProvider)
+    const signer =  ethersProvider.getSigner()
+    const PvPToken = new ethers.Contract('0xF6342d018a5FB21a0aa6134A7756118AE2B1953a', PvPTokenAbi, signer)
+    const approved = await PvPToken.approve('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', 20000)
+    if(approved){
+      wagerPaid.current = true
+    }
+  }
+
   async function clickPlay (e: FormEvent<HTMLButtonElement>) {
-    // const ethersProvider = new ethers.providers.Web3Provider(walletProvider)
-    // const signer =  ethersProvider.getSigner()
-    // const PvPToken = new ethers.Contract('0xF6342d018a5FB21a0aa6134A7756118AE2B1953a', PvPTokenAbi, signer)
-    // const approved = await PvPToken.approve('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', 20000)
+  
     setPlayBtnLoading(true);
     e.preventDefault();
     
@@ -562,18 +576,41 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
     <div className="flex w-full flex-wrap justify-center gap-6 px-4 py-4 lg:gap-10 2xl:gap-16">
       <div className="relative h-min">
         {/* overlay */}
-        {(!lobby.white?.id || !lobby.black?.id) && (
+        {(!lobby.white?.id || !lobby.black?.id) && 
+        (
           <div className="absolute bottom-0 right-0 top-0 z-10 flex h-full w-full items-center justify-center bg-black bg-opacity-70">
             <div className="bg-base-200 flex w-full items-center justify-center gap-4 px-2 py-4">
               Waiting for opponent.
-              {session?.user?.id !== lobby.white?.id && session?.user?.id !== lobby.black?.id && ( isConnected ? 
+              {session?.user?.id !== lobby.white?.id && session?.user?.id !== lobby.black?.id && 
+            
                 <button
                   className={"btn btn-secondary" + (playBtnLoading ? " btn-disabled" : "")}
                   onClick={clickPlay}
                 >
                   Play as {lobby.white?.id ? "black" : "white"}
-                </button> : <button  className={"btn btn-secondary  btn-disabled"}>wallet not connected</button>
-              )}
+                </button>  
+              
+              }
+              
+            </div>
+          </div>
+        )}
+        {(lobby.white?.id && lobby.black?.id ) && 
+        (
+          <div className="absolute bottom-0 right-0 top-0 z-10 flex h-full w-full items-center justify-center bg-black bg-opacity-70">
+            <div className="bg-base-200 flex w-full items-center justify-center gap-4 px-2 py-4">
+              Pay wager before the game begins
+              { lobby.white?.id &&  lobby.black?.id && !wagerPaid.current &&
+            
+                <button
+                  className={"btn btn-secondary" + (playBtnLoading ? " btn-disabled" : "")}
+                  onClick={payWager}
+                >
+                  Pay Wager
+                </button>  
+              
+              }
+              
             </div>
           </div>
         )}
@@ -732,6 +769,10 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
             </div>
             )
           }
+          {!lobby.endReason && lobby.black?.connected && lobby.white?.connected  && wagerPaid.current && lobby.side === lobby.actualGame.turn() && <div className={isRed ? "bg-red-500 text-white p-4 rounded-full": 'bg-white-500 text-black p-4 rounded-full'}>
+            If you do not make a move, you will forfeit the match {timeLeft}.
+          </div>}
+
           <div className="bg-base-300 flex h-full w-full min-w-[64px] flex-col rounded-lg p-4 shadow-sm">
             <ul
               className="mb-4 flex h-full flex-col gap-1 overflow-y-scroll break-words"

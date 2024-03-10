@@ -19,10 +19,10 @@ export async function generateMetadata({ params }: { params: { id: number } }) {
   return {
     description: `Archived game: ${game.white?.name} vs ${game.black?.name}`,
     openGraph: {
-      title: "chessu",
+      title: "PvPArena",
       description: `Archived game: ${game.white?.name} vs ${game.black?.name}`,
-      url: `https://ches.su/archive/${game.id}`,
-      siteName: "chessu",
+      url: `https:///archive/${game.id}`,
+      siteName: "PvPArena",
       locale: "en_US",
       type: "website"
     },

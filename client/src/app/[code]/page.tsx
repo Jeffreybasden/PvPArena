@@ -8,7 +8,7 @@ export async function generateMetadata({ params }: { params: { code: string } })
     return {
       description: "Game not found",
       robots: {
-        index: false,
+        index: false, 
         follow: false,
         nocache: true,
         noarchive: true
@@ -18,10 +18,10 @@ export async function generateMetadata({ params }: { params: { code: string } })
   return {
     description: `Play or watch a game with ${game.host?.name}`,
     openGraph: {
-      title: "chessu",
+      title: "PvPArena",
       description: `Play or watch a game with ${game.host?.name}`,
-      url: `PvPArcade/${game.code}`,
-      siteName: "chessu",
+      url: `PvPArena/${game.code}`,
+      siteName: "PvPArena",
       locale: "en_US",
       type: "website"
     },

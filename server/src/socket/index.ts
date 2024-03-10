@@ -8,7 +8,8 @@ import {
     joinAsPlayer,
     joinLobby,
     leaveLobby,
-    sendMove
+    sendMove,
+    wagerPaid
 } from "./game.socket.js";
 
 const socketConnect = (socket: Socket) => {
@@ -34,6 +35,7 @@ const socketConnect = (socket: Socket) => {
     socket.on("joinAsPlayer", joinAsPlayer);
     socket.on("chat", chat);
     socket.on("claimAbandoned", claimAbandoned);
+    socket.on("wagerPaid", wagerPaid);
 };
 
 export const init = () => {
