@@ -12,7 +12,7 @@ const sessionMiddleware = session({
     proxy: true,
     cookie: {
         maxAge: 30 * 24 * 60 * 60 * 1000,
-        secure: false,
+        secure: true,
         httpOnly: true,
         sameSite: "none"
     },
