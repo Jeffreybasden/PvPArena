@@ -8,7 +8,7 @@ import session from "./middleware/session.js";
 import routes from "./routes/index.js";
 import { init as initSocket } from "./socket/index.js";
 const corsConfig = {
-    origin: 'https://degen-arcade-client-i56sdhtd5-degenvsdegens-projects.vercel.app',
+    origin: 'https://degen-arcade-client-mfvxuvshx-degenvsdegens-projects.vercel.app/',
     credentials: true,
 };
 const app = express();
