@@ -8,7 +8,7 @@ import session from "./middleware/session.js";
 import routes from "./routes/index.js";
 import { init as initSocket } from "./socket/index.js";
 const corsConfig = {
-    origin: 'http://localhost:3000',
+    origin: 'https://degen-arcade-client-i56sdhtd5-degenvsdegens-projects.vercel.app/',
     credentials: true,
 };
 const app = express();
@@ -47,5 +47,5 @@ io.use((socket, next) => {
 initSocket();
 const port = process.env.PORT || 3001;
 server.listen(port, () => {
-    console.log('cors issue not fixed', corsConfig);
+    console.log('cors issue fixef', corsConfig);
 });
