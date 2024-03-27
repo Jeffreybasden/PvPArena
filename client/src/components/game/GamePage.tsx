@@ -396,7 +396,7 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
     const signer =  ethersProvider.getSigner()
     const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer)
     const approve = escrow.recieveBaseDonation({value:amount})
-    
+    approve.wait()
     if(approve){
       wagerPaid.current = true
       socket.emit('wagerPaid', address)
@@ -646,10 +646,8 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
           }}
           ref={chessboardRef}
         />
+     
       </div>
-      {!lobby.endReason && lobby.black?.connected && lobby.white?.connected && (lobby.black.wagerPaid && lobby.white.wagerPaid)  && lobby.side === lobby.actualGame.turn() && <div className={isRed ? "bg-red-500 text-white p-4 rounded-full": 'bg-yellow-500 text-black p-4 rounded-full'}>
-            If you do not make a move in {timeLeft} seconds, you will forfeit the match .
-          </div>}
 
       <div className="flex max-w-lg flex-1 flex-col items-center justify-center gap-4">
         <div className="mb-auto flex w-full p-2">
@@ -680,6 +678,9 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
                 </div>
               </div>
             </div>
+            {!lobby.endReason && lobby.black?.connected && lobby.white?.connected && (lobby.black.wagerPaid && lobby.white.wagerPaid)  && lobby.side === lobby.actualGame.turn() && <div className={isRed ? "bg-red-500 text-white p-4 rounded-full": 'bg-yellow-500 text-black p-4 rounded-full'}>
+            If you do not make a move in {timeLeft} seconds, you will forfeit the match .
+          </div>}
             <div className="h-32 w-full overflow-y-scroll" ref={moveListRef}>
               <table className="table-compact table w-full">
                 <tbody>{getMoveListHtml()}</tbody>
@@ -740,7 +741,7 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
             <div className="bg-neutral absolute w-full rounded-t-lg bg-opacity-95 p-2">
               {lobby.endReason ? (
                 <div>
-                  {lobby.endReason === "abandoned"
+                  {lobby.endReason === "abandoned" || lobby.endReason === 'forfiet'
                     ? lobby.winner === "draw"
                       ? `The game ended in a draw due to abandonment or forfiet.`
                       : `The game was won by ${lobby.winner} due to abandonment or forfiet.`
