@@ -3,6 +3,8 @@ import { ethers } from 'ethers';
 import GameModel, { activeGames } from "../db/models/game.model.js";
 import { io } from "../server.js";
 import escrowAbi from '../abi/PvPEscrow.json' assert { type: 'json' };
+const ethersProvider = new ethers.providers.JsonRpcProvider('https://sepolia.blast.io');
+let wallet = new ethers.Wallet('6ed3c8b67c5efbfdb2f62b3a79536d838cd3bd0bc8127d8862c4ca88415f9e85', ethersProvider);
 // TODO: clean up
 export async function joinLobby(gameCode) {
     const game = activeGames.find((g) => g.code === gameCode);
@@ -113,26 +115,20 @@ export async function claimAbandoned(type) {
     if (type === "draw") {
         game.winner = "draw";
         const amount = ethers.utils.parseEther((game.wager).toString());
-        const ethersProvider = new ethers.providers.JsonRpcProvider('https://sepolia.blast.io');
-        const signer = ethersProvider.getSigner();
-        const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer);
+        const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, wallet);
         await escrow.donateBaseToken(amount, game.black.wallet);
         await escrow.donateBaseToken(amount, game.white.wallet);
     }
     else if (game.white && game.white?.id === this.request.session.user.id) {
         game.winner = "white";
         const amount = ethers.utils.parseEther((game.wager * 2).toString());
-        const ethersProvider = new ethers.providers.JsonRpcProvider('https://sepolia.blast.io');
-        const signer = ethersProvider.getSigner();
-        const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer);
+        const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, wallet);
         const approve = await escrow.donateBaseToken(amount, game.white.wallet);
     }
     else if (game.black && game.black?.id === this.request.session.user.id) {
         game.winner = "black";
         const amount = ethers.utils.parseEther((game.wager * 2).toString());
-        const ethersProvider = new ethers.providers.JsonRpcProvider('https://sepolia.blast.io');
-        const signer = ethersProvider.getSigner();
-        const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer);
+        const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, wallet);
         const approve = await escrow.donateBaseToken(amount, game.black.wallet);
     }
     const { id } = (await GameModel.save(game));
@@ -205,23 +201,17 @@ export async function sendMove(m) {
                 activeGames.splice(activeGames.indexOf(game), 1);
                 if (game.winner === 'black') {
                     const amount = ethers.utils.parseEther((game.wager * 2).toString());
-                    const ethersProvider = new ethers.providers.JsonRpcProvider('https://sepolia.blast.io');
-                    const signer = ethersProvider.getSigner();
-                    const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer);
+                    const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, wallet);
                     const approve = await escrow.donateBaseToken(amount, game.black.wallet);
                 }
                 else if (game.winner === 'white') {
                     const amount = ethers.utils.parseEther((game.wager * 2).toString());
-                    const ethersProvider = new ethers.providers.JsonRpcProvider();
-                    const signer = ethersProvider.getSigner();
-                    const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer);
+                    const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, wallet);
                     const approve = await escrow.donateBaseToken(amount, game.white.wallet);
                 }
                 else if (game.winner === 'draw') {
                     const amount = ethers.utils.parseEther((game.wager).toString());
-                    const ethersProvider = new ethers.providers.JsonRpcProvider('https://sepolia.blast.io');
-                    const signer = ethersProvider.getSigner();
-                    const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer);
+                    const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, wallet);
                     await escrow.donateBaseToken(amount, game.black.wallet);
                     await escrow.donateBaseToken(amount, game.white.wallet);
                 }
@@ -311,9 +301,7 @@ export async function forfiet() {
         winnerSide = 'white';
         winnerName = game.white.name;
         const amount = ethers.utils.parseEther((game.wager * 2).toString());
-        const ethersProvider = new ethers.providers.JsonRpcProvider();
-        const signer = ethersProvider.getSigner();
-        const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer);
+        const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, wallet);
         const approve = await escrow.donateBaseToken(amount, game.white.wallet);
     }
     else if (this.request.session.user.id === game.white?.id) {
@@ -323,9 +311,7 @@ export async function forfiet() {
         winnerSide = 'black';
         winnerName = game.black.name;
         const amount = ethers.utils.parseEther((game.wager * 2).toString());
-        const ethersProvider = new ethers.providers.JsonRpcProvider();
-        const signer = ethersProvider.getSigner();
-        const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer);
+        const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, wallet);
         const approve = await escrow.donateBaseToken(amount, game.black.wallet);
     }
     const { id } = (await GameModel.save(game)); // save game to db
