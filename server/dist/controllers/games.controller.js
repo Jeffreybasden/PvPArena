@@ -73,7 +73,7 @@ export const createGame = async (req, res) => {
             id: req.session.user.id,
             name: req.session.user.name,
             connected: false,
-            wagerPaid: false
+            wagerPaid: false,
         };
         const unlisted = req.body.unlisted ?? false;
         const game = {
@@ -81,7 +81,7 @@ export const createGame = async (req, res) => {
             unlisted,
             host: user,
             pgn: "",
-            wager: req.body.tokenAmount,
+            wager: Number(req.body.tokenAmount),
             token: req.body.token
         };
         if (req.body.side === "white") {

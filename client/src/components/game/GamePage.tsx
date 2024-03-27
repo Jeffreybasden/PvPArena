@@ -30,7 +30,7 @@ import { lobbyReducer, squareReducer } from "./reducers";
 import { initSocket } from "./socketEvents";
 import { syncPgn, syncSide } from "./utils";
 import { useWeb3ModalProvider, useWeb3ModalAccount } from '@web3modal/ethers5/react'
-import { ethers } from 'ethers'
+import { Wallet, ethers } from 'ethers'
 import escrowAbi from '../../abi/PvPEscrow.json'
 import PvPTokenAbi from '../../abi/pvpTokenAbi.json'
 
@@ -160,23 +160,24 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
 
   //turn Timer
   useEffect(() => {
-    if(!lobby.endReason && lobby.black?.connected && lobby.white?.connected  && wagerPaid.current && lobby.side === lobby.actualGame.turn()){
+    if(!lobby.endReason && lobby.black?.wagerPaid && lobby.white?.wagerPaid && (lobby.side === lobby.actualGame.turn())){
 
       const timer = setInterval(() => {
         setTimeLeft(prevTime => {
           if ( prevTime <= 15 ) {
             setIsRed(true);
-        }
+          }else setIsRed(false)
 
         if(prevTime <= 0){
+          socket.emit('forfiet')
           clearInterval(timer); // Stop the timer when prevTime reaches 0
-          claimAbandoned('draw');
+          ;
           return 0; // Ensure
         }
         return prevTime - 1;
       });
     }, 1000);
-    
+    setTimeLeft(60)
     return () => clearInterval(timer);
   }
   }, [lobby.actualGame.turn()]);
@@ -390,12 +391,15 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
   }
 
   async function payWager(){
+    const amount = ethers.utils.parseEther(lobby.wager.toString()); 
     const ethersProvider = new ethers.providers.Web3Provider(walletProvider)
     const signer =  ethersProvider.getSigner()
-    const PvPToken = new ethers.Contract('0xF6342d018a5FB21a0aa6134A7756118AE2B1953a', PvPTokenAbi, signer)
-    const approved = await PvPToken.approve('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', 20000)
-    if(approved){
+    const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer)
+    const approve = escrow.recieveBaseDonation({value:amount})
+    
+    if(approve){
       wagerPaid.current = true
+      socket.emit('wagerPaid', address)
     }
   }
 
@@ -595,26 +599,32 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
             </div>
           </div>
         )}
-        {(lobby.white?.id && lobby.black?.id ) && 
+        {(lobby.white?.id && lobby.black?.id && (!lobby.black.wagerPaid || !lobby.white.wagerPaid)) && 
         (
           <div className="absolute bottom-0 right-0 top-0 z-10 flex h-full w-full items-center justify-center bg-black bg-opacity-70">
             <div className="bg-base-200 flex w-full items-center justify-center gap-4 px-2 py-4">
-              Pay wager before the game begins
-              { lobby.white?.id &&  lobby.black?.id && !wagerPaid.current &&
+              {!wagerPaid.current && ( !isConnected ?
             
+                <p>please connect your wallet</p> :
+                
                 <button
-                  className={"btn btn-secondary" + (playBtnLoading ? " btn-disabled" : "")}
+                  className={"btn btn-secondary"}
                   onClick={payWager}
                 >
                   Pay Wager
-                </button>  
+                </button> 
+                )
               
+              }
+
+              {wagerPaid.current && (!lobby.black.wagerPaid || !lobby.white.wagerPaid) &&
+              <p>Waiting for opponent to pay wager</p>
               }
               
             </div>
           </div>
         )}
-
+           
         <Chessboard
           boardWidth={boardWidth}
           customDarkSquareStyle={{ backgroundColor: "#4b7399" }}
@@ -637,6 +647,9 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
           ref={chessboardRef}
         />
       </div>
+      {!lobby.endReason && lobby.black?.connected && lobby.white?.connected && (lobby.black.wagerPaid && lobby.white.wagerPaid)  && lobby.side === lobby.actualGame.turn() && <div className={isRed ? "bg-red-500 text-white p-4 rounded-full": 'bg-yellow-500 text-black p-4 rounded-full'}>
+            If you do not make a move in {timeLeft} seconds, you will forfeit the match .
+          </div>}
 
       <div className="flex max-w-lg flex-1 flex-col items-center justify-center gap-4">
         <div className="mb-auto flex w-full p-2">
@@ -729,8 +742,8 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
                 <div>
                   {lobby.endReason === "abandoned"
                     ? lobby.winner === "draw"
-                      ? `The game ended in a draw due to abandonment.`
-                      : `The game was won by ${lobby.winner} due to abandonment.`
+                      ? `The game ended in a draw due to abandonment or forfiet.`
+                      : `The game was won by ${lobby.winner} due to abandonment or forfiet.`
                     : lobby.winner === "draw"
                     ? "The game ended in a draw."
                     : `The game was won by checkmate (${lobby.winner}).`}{" "}
@@ -769,10 +782,6 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
             </div>
             )
           }
-          {!lobby.endReason && lobby.black?.connected && lobby.white?.connected  && wagerPaid.current && lobby.side === lobby.actualGame.turn() && <div className={isRed ? "bg-red-500 text-white p-4 rounded-full": 'bg-white-500 text-black p-4 rounded-full'}>
-            If you do not make a move, you will forfeit the match {timeLeft}.
-          </div>}
-
           <div className="bg-base-300 flex h-full w-full min-w-[64px] flex-col rounded-lg p-4 shadow-sm">
             <ul
               className="mb-4 flex h-full flex-col gap-1 overflow-y-scroll break-words"

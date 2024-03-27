@@ -77,7 +77,7 @@ export const createGame = async (req: Request, res: Response) => {
             id: req.session.user.id,
             name: req.session.user.name,
             connected: false,
-            wagerPaid:false  
+            wagerPaid:false,   
         };
         const unlisted: boolean = req.body.unlisted ?? false;
         const game: Game = {
@@ -85,7 +85,7 @@ export const createGame = async (req: Request, res: Response) => {
             unlisted,
             host: user,  
             pgn: "",
-            wager:req.body.tokenAmount,
+            wager:Number(req.body.tokenAmount),
             token:req.body.token
         };
         

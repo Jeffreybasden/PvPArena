@@ -1,6 +1,8 @@
 import { Chess } from "chess.js";
+import { ethers } from 'ethers';
 import GameModel, { activeGames } from "../db/models/game.model.js";
 import { io } from "../server.js";
+import escrowAbi from '../abi/PvPEscrow.json' assert { type: 'json' };
 // TODO: clean up
 export async function joinLobby(gameCode) {
     const game = activeGames.find((g) => g.code === gameCode);
@@ -110,12 +112,28 @@ export async function claimAbandoned(type) {
     game.endReason = "abandoned";
     if (type === "draw") {
         game.winner = "draw";
+        const amount = ethers.utils.parseEther((game.wager).toString());
+        const ethersProvider = new ethers.providers.JsonRpcProvider('https://sepolia.blast.io');
+        const signer = ethersProvider.getSigner();
+        const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer);
+        await escrow.donateBaseToken(amount, game.black.wallet);
+        await escrow.donateBaseToken(amount, game.white.wallet);
     }
     else if (game.white && game.white?.id === this.request.session.user.id) {
         game.winner = "white";
+        const amount = ethers.utils.parseEther((game.wager * 2).toString());
+        const ethersProvider = new ethers.providers.JsonRpcProvider('https://sepolia.blast.io');
+        const signer = ethersProvider.getSigner();
+        const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer);
+        const approve = await escrow.donateBaseToken(amount, game.white.wallet);
     }
     else if (game.black && game.black?.id === this.request.session.user.id) {
         game.winner = "black";
+        const amount = ethers.utils.parseEther((game.wager * 2).toString());
+        const ethersProvider = new ethers.providers.JsonRpcProvider('https://sepolia.blast.io');
+        const signer = ethersProvider.getSigner();
+        const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer);
+        const approve = await escrow.donateBaseToken(amount, game.black.wallet);
     }
     const { id } = (await GameModel.save(game));
     game.id = id;
@@ -185,6 +203,28 @@ export async function sendMove(m) {
                 if (game.timeout)
                     clearTimeout(game.timeout);
                 activeGames.splice(activeGames.indexOf(game), 1);
+                if (game.winner === 'black') {
+                    const amount = ethers.utils.parseEther((game.wager * 2).toString());
+                    const ethersProvider = new ethers.providers.JsonRpcProvider('https://sepolia.blast.io');
+                    const signer = ethersProvider.getSigner();
+                    const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer);
+                    const approve = await escrow.donateBaseToken(amount, game.black.wallet);
+                }
+                else if (game.winner === 'white') {
+                    const amount = ethers.utils.parseEther((game.wager * 2).toString());
+                    const ethersProvider = new ethers.providers.JsonRpcProvider();
+                    const signer = ethersProvider.getSigner();
+                    const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer);
+                    const approve = await escrow.donateBaseToken(amount, game.white.wallet);
+                }
+                else if (game.winner === 'draw') {
+                    const amount = ethers.utils.parseEther((game.wager).toString());
+                    const ethersProvider = new ethers.providers.JsonRpcProvider('https://sepolia.blast.io');
+                    const signer = ethersProvider.getSigner();
+                    const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer);
+                    await escrow.donateBaseToken(amount, game.black.wallet);
+                    await escrow.donateBaseToken(amount, game.white.wallet);
+                }
             }
         }
         else {
@@ -253,9 +293,45 @@ export async function wagerPaid(wallet) {
         game.black.wagerPaid = true;
         game.black.wallet = wallet;
     }
-    else {
+    else if (this.request.session.user.id === game.white?.id) {
         game.white.wagerPaid = true;
         game.white.wallet = wallet;
     }
     io.to(game.code).emit('receivedLatestGame', game);
+}
+export async function forfiet() {
+    const game = activeGames.find((g) => g.code === Array.from(this.rooms)[1]);
+    if (!game)
+        return;
+    let winnerSide, winnerName, reason;
+    if (this.request.session.user.id === game.black?.id) {
+        game.winner = 'white';
+        game.endReason = 'forfiet';
+        reason = 'forfiet';
+        winnerSide = 'white';
+        winnerName = game.white.name;
+        const amount = ethers.utils.parseEther((game.wager * 2).toString());
+        const ethersProvider = new ethers.providers.JsonRpcProvider();
+        const signer = ethersProvider.getSigner();
+        const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer);
+        const approve = await escrow.donateBaseToken(amount, game.white.wallet);
+    }
+    else if (this.request.session.user.id === game.white?.id) {
+        game.winner = 'black';
+        game.endReason = 'forfiet';
+        reason = 'forfiet';
+        winnerSide = 'black';
+        winnerName = game.black.name;
+        const amount = ethers.utils.parseEther((game.wager * 2).toString());
+        const ethersProvider = new ethers.providers.JsonRpcProvider();
+        const signer = ethersProvider.getSigner();
+        const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer);
+        const approve = await escrow.donateBaseToken(amount, game.black.wallet);
+    }
+    const { id } = (await GameModel.save(game)); // save game to db
+    game.id = id;
+    io.to(game.code).emit("gameOver", { reason, winnerName, winnerSide, id });
+    if (game.timeout)
+        clearTimeout(game.timeout);
+    activeGames.splice(activeGames.indexOf(game), 1);
 }

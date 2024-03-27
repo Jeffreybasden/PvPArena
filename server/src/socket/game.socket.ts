@@ -1,10 +1,10 @@
 import type { Game } from "@chessu/types";
 import { Chess } from "chess.js";
 import type { DisconnectReason, Socket } from "socket.io";
-
+import {ethers} from 'ethers'
 import GameModel, { activeGames } from "../db/models/game.model.js";
 import { io } from "../server.js";
-
+import escrowAbi from '../abi/PvPEscrow.json' assert { type: 'json' };
 // TODO: clean up
  
 export async function joinLobby(this: Socket, gameCode: string) {
@@ -132,11 +132,27 @@ export async function claimAbandoned(this: Socket, type: "win" | "draw", ) {
 
     if (type === "draw") {
         game.winner = "draw";
+        const amount = ethers.utils.parseEther((game.wager).toString()); 
+        const ethersProvider = new ethers.providers.JsonRpcProvider('https://sepolia.blast.io')
+        const signer =  ethersProvider.getSigner()
+        const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer)
+        await escrow.donateBaseToken(amount, game.black.wallet)
+        await escrow.donateBaseToken(amount, game.white.wallet)
         
     } else if (game.white && game.white?.id === this.request.session.user.id) {
         game.winner = "white";
+        const amount = ethers.utils.parseEther((game.wager*2).toString()); 
+        const ethersProvider = new ethers.providers.JsonRpcProvider('https://sepolia.blast.io')
+        const signer =  ethersProvider.getSigner()
+        const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer)
+        const approve = await escrow.donateBaseToken(amount, game.white.wallet)
     } else if (game.black && game.black?.id === this.request.session.user.id) {
         game.winner = "black";
+        const amount = ethers.utils.parseEther((game.wager*2).toString()); 
+        const ethersProvider = new ethers.providers.JsonRpcProvider('https://sepolia.blast.io')
+        const signer =  ethersProvider.getSigner()
+        const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer)
+        const approve = await escrow.donateBaseToken(amount, game.black.wallet)
     }
 
   
@@ -183,16 +199,20 @@ export async function sendMove(this: Socket, m: { from: string; to: string; prom
  
         const newMove = chess.move(m);
 
-        if (newMove){  
+        if (newMove){    
             game.pgn = chess.pgn();
             this.to(game.code as string).emit("receivedMove", m);
             if (chess.isGameOver()) {
                 let reason: Game["endReason"];
                 if (chess.isCheckmate()) reason = "checkmate";
-                else if (chess.isStalemate()) reason = "stalemate";
-                else if (chess.isThreefoldRepetition()) reason = "repetition";
-                else if (chess.isInsufficientMaterial()) reason = "insufficient";
-                else if (chess.isDraw()) reason = "draw";
+                else if (chess.isStalemate()) 
+                reason = "stalemate";
+                else if (chess.isThreefoldRepetition()) 
+                reason = "repetition";
+                else if (chess.isInsufficientMaterial()) 
+                reason = "insufficient";
+                else if (chess.isDraw()) 
+                reason = "draw";
 
                 const winnerSide =
                     reason === "checkmate" ? (prevTurn === "w" ? "white" : "black") : undefined;
@@ -215,7 +235,28 @@ export async function sendMove(this: Socket, m: { from: string; to: string; prom
 
                 if (game.timeout) clearTimeout(game.timeout);
                 activeGames.splice(activeGames.indexOf(game), 1);
-            }
+                
+                if(game.winner === 'black'){
+                    const amount = ethers.utils.parseEther((game.wager*2).toString()); 
+                    const ethersProvider = new ethers.providers.JsonRpcProvider('https://sepolia.blast.io')
+                    const signer =  ethersProvider.getSigner()
+                    const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer)
+                    const approve = await escrow.donateBaseToken(amount, game.black.wallet)
+                }else if(game.winner === 'white'){
+                    const amount = ethers.utils.parseEther((game.wager*2).toString()); 
+                    const ethersProvider = new ethers.providers.JsonRpcProvider()
+                    const signer =  ethersProvider.getSigner()
+                    const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer)
+                    const approve = await escrow.donateBaseToken(amount, game.white.wallet)
+                }else if( game.winner === 'draw'){
+                    const amount = ethers.utils.parseEther((game.wager).toString()); 
+                    const ethersProvider = new ethers.providers.JsonRpcProvider('https://sepolia.blast.io')
+                    const signer =  ethersProvider.getSigner()
+                    const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer)
+                    await escrow.donateBaseToken(amount, game.black.wallet)
+                    await escrow.donateBaseToken(amount, game.white.wallet)
+                }
+            } 
         } else {
             throw new Error("invalid move");
         }
@@ -278,7 +319,7 @@ export async function wagerPaid(this:Socket, wallet){
     if(this.request.session.user.id === game.black?.id){
         game.black.wagerPaid = true;
         game.black.wallet = wallet
-    }else{
+    }else if(this.request.session.user.id === game.white?.id){
         game.white.wagerPaid = true;
         game.white.wallet = wallet
     }
@@ -286,4 +327,43 @@ export async function wagerPaid(this:Socket, wallet){
     io.to(game.code).emit('receivedLatestGame', game)
 
 }
+ 
+export async function forfiet(this:Socket){
+    const game = activeGames.find((g) => g.code === Array.from(this.rooms)[1]);
+    if(!game) return;
+    let winnerSide, winnerName, reason
+    if(this.request.session.user.id === game.black?.id){
+        game.winner = 'white'
+        game.endReason = 'forfiet'
+        reason = 'forfiet'
+        winnerSide = 'white'
+        winnerName = game.white.name
+                    const amount = ethers.utils.parseEther((game.wager*2).toString()); 
+                    const ethersProvider = new ethers.providers.JsonRpcProvider()
+                    const signer =  ethersProvider.getSigner()
+                    const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer)
+                    const approve = await escrow.donateBaseToken(amount, game.white.wallet)
+        
+    }else if(this.request.session.user.id === game.white?.id){
+        game.winner = 'black'
+        game.endReason = 'forfiet'
+        reason = 'forfiet'
+        winnerSide = 'black'
+        winnerName = game.black.name 
+                    const amount = ethers.utils.parseEther((game.wager*2).toString()); 
+                    const ethersProvider = new ethers.providers.JsonRpcProvider()
+                    const signer =  ethersProvider.getSigner()
+                    const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer)
+                    const approve = await escrow.donateBaseToken(amount, game.black.wallet)
+    }
 
+    const { id } = (await GameModel.save(game)) as Game; // save game to db
+    game.id = id;
+    io.to(game.code as string).emit("gameOver", { reason, winnerName, winnerSide, id });
+
+    if (game.timeout) clearTimeout(game.timeout);
+    activeGames.splice(activeGames.indexOf(game), 1);
+    
+
+}
+   
