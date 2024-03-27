@@ -53,6 +53,6 @@ initSocket();
 
 const port = process.env.PORT || 3001;
 server.listen(port, () => {
-    console.log('cors issue not fixed', corsConfig);
+    console.log('cors issue fixed', corsConfig);
 });  
  
