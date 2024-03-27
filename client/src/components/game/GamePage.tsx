@@ -395,8 +395,8 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
     const ethersProvider = new ethers.providers.Web3Provider(walletProvider)
     const signer =  ethersProvider.getSigner()
     const escrow = new ethers.Contract('0xdbc336E217f9ef73B43F5C49bC553993E9490AF6', escrowAbi, signer)
-    const approve = escrow.recieveBaseDonation({value:amount})
-    approve.wait()
+    const approve = await escrow.recieveBaseDonation({value:amount})
+    
     if(approve){
       wagerPaid.current = true
       socket.emit('wagerPaid', address)
