@@ -11,7 +11,7 @@ import routes from "./routes/index.js";
 import { init as initSocket } from "./socket/index.js";
 
 const corsConfig = {
-    origin:'https://degen-arcade-client-c0f9gx46n-degenvsdegens-projects.vercel.app',
+    origin:'https://degen-arcade-client-i56sdhtd5-degenvsdegens-projects.vercel.app/',
     credentials: true,
 };
 
