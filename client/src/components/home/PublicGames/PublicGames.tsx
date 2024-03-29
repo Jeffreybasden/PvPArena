@@ -52,7 +52,7 @@ export default async function PublicGames() {
             ))
           ) : (
             <tr>
-              <td colSpan="4">(empty)</td>
+              <td>(empty)</td>
             </tr>
           )}
         </tbody>
