@@ -650,6 +650,12 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
       </div>
 
       <div className="flex max-w-lg flex-1 flex-col items-center justify-center gap-4">
+      {!lobby.endReason && lobby.black?.connected && lobby.white?.connected && (lobby.black.wagerPaid && lobby.white.wagerPaid) && lobby.side === lobby.actualGame.turn() && (
+    <div className={`bg-${isRed ? 'red' : 'yellow'}-500 text-${isRed ? 'white' : 'black'} p-2 rounded-md mt-2`}>
+        If you do not make a move in {timeLeft} seconds, you will forfeit the match.
+    </div>
+)}
+
         <div className="mb-auto flex w-full p-2">
           <div className="flex flex-1 flex-col items-center justify-between">
             {getPlayerHtml("top")}
@@ -678,9 +684,7 @@ export default function GamePage({ initialLobby }: { initialLobby: Game }) {
                 </div>
               </div>
             </div>
-            {!lobby.endReason && lobby.black?.connected && lobby.white?.connected && (lobby.black.wagerPaid && lobby.white.wagerPaid)  && lobby.side === lobby.actualGame.turn() && <div className={isRed ? "bg-red-500 text-white p-4 rounded-full": 'bg-yellow-500 text-black p-4 rounded-full'}>
-            If you do not make a move in {timeLeft} seconds, you will forfeit the match .
-          </div>}
+          
             <div className="h-32 w-full overflow-y-scroll" ref={moveListRef}>
               <table className="table-compact table w-full">
                 <tbody>{getMoveListHtml()}</tbody>

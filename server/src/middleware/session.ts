@@ -31,13 +31,13 @@ const sessionMiddleware = session({
     proxy: true,
     cookie: {
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        secure: true,
-        httpOnly: true,
+        secure: 'auto',
+        httpOnly: false,
         sameSite: "none"
     },
     genid: function () { 
         return nanoid(21);
     }
-});
+});  
 
 export default sessionMiddleware;
